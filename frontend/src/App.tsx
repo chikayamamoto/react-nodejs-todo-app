@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import TodoForm from './components/TodoForm';
 // ToDoの型をインターフェースとして定義する
 interface Todo {
   id: number;
@@ -38,10 +39,31 @@ function App() {
 
     initApp();
   }, []);
+
+  // APIにリクエストを送信し、ToDoを追加する関数
+  async function addTodo(title: string) {
+    const res = await fetch(`${apiUrl}/todos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+
+    if (!res.ok) throw new Error('ToDoの追加に失敗しました。');
+  };
+
   return (
     <>
       <h2>ToDo一覧</h2>
-
+      <TodoForm
+        onSubmit={async (title) => {
+          try {
+            await addTodo(title);
+            await syncTodos();
+          } catch (err) {
+            alert((err as Error).message);
+          }
+        }}
+      />
       <ul>
         {todos.map((todo) => (
           <li key={todo.id}>

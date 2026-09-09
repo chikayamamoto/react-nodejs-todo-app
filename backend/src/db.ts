@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 // 型をインポートする
-import type { RowDataPacket } from 'mysql2/promise';
+import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 
 // .envファイルを読み込む
 dotenv.config();
@@ -38,4 +38,14 @@ export async function query<T = any>(sql: string, params: any[] = []) {
    console.error('SQLの実行中にエラーが発生しました：', err);
    throw err;
  }
+}
+// SQL文を実行する関数（INSERT、UPDATE、DELETE）
+export async function exec(sql: string, params: any[] = []) {
+  try {
+    const [result] = await pool.execute<ResultSetHeader>(sql, params);
+    return result;
+  } catch (err) {
+    console.error('SQLの実行中にエラーが発生しました：', err);
+    throw err;
+  }
 }

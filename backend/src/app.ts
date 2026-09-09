@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { query, closePool } from './db';
+import { query, exec, closePool } from './db';
 
 // 型をインポートする
 import type { Request, Response } from 'express';
@@ -25,8 +25,11 @@ const app = express();
 // CORSの設定を行う
 app.use(cors({
   origin: 'http://localhost:5173',  // 許可するオリジン
-  methods: ['GET']                  // 許可するHTTPメソッド
+  methods: ['GET', 'POST']          // 許可するHTTPメソッド
 }));
+
+// JSON形式のリクエストボディを解析するミドルウェアを追加する
+app.use(express.json());
 
 // サーバーエラーを処理する関数
 function handleServerError(res: Response, err: unknown, message: string = 'サーバーエラー') {
@@ -44,7 +47,30 @@ app.get('/api/todos', async (req: Request, res: Response) => {
     handleServerError(res, err);
   }
 });
+// ToDoを追加するルート
+app.post('/api/todos', async (req: Request, res: Response) => {
+  const { title }: { title: string } = req.body;
 
+  if (!title.trim()) {
+    res.status(400).json({ error: 'ToDoを入力してください。' });
+    return;
+  }
+  if (title.trim().length > 50) {
+    res.status(400).json({ error: 'ToDoは50文字以内で入力してください。' });
+    return;
+  }
+
+  try {
+    const sql = 'INSERT INTO todos (title, completed, created_at) VALUES (?, ?, ?)';
+    const params = [title, false, new Date()];
+
+    await exec(sql, params);
+
+    res.status(201).json({ message: 'ToDoを追加しました。' });
+  } catch (err) {
+    handleServerError(res, err);
+  }
+});
 // 定義したルート以外へのアクセスに対する処理（404 Not Found）
 app.use((req: Request, res: Response) => {
   res.status(404).set('Content-Type', 'text/html; charset=utf-8');
