@@ -10,7 +10,7 @@ interface Todo {
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const apiUrl = import.meta.env.VITE_API_URL;
-  console.log('API URL:', apiUrl);
+  const [editingId, setEditingId] = useState<number | null>(null);
   // APIにリクエストを送信し、ToDo一覧を取得する関数
   async function fetchTodos(): Promise<Todo[]> {
     const res = await fetch(`${apiUrl}/todos`);
@@ -50,6 +50,16 @@ function App() {
 
     if (!res.ok) throw new Error('ToDoの追加に失敗しました。');
   };
+  // APIにリクエストを送信し、ToDoを更新する関数
+  async function updateTodo(id: number, title: string, completed: boolean) {
+    const res = await fetch(`${apiUrl}/todos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, completed }),
+    });
+
+    if (!res.ok) throw new Error('ToDoの更新に失敗しました。');
+  };
 
   return (
     <>
@@ -67,9 +77,33 @@ function App() {
       <ul>
         {todos.map((todo) => (
           <li key={todo.id}>
-            <strong>{todo.title}</strong>
-            （作成日時: {new Date(todo.createdAt).toLocaleString('ja-JP')}）
-            {todo.completed ? '✅' : ''}
+            {editingId === todo.id ? (
+              // 編集ボタンが押されたときは、編集用フォームを表示する
+              <>
+                <TodoForm
+                  onSubmit={async (title) => {
+                    try {
+                      await updateTodo(todo.id, title, todo.completed);
+                      setEditingId(null);
+                      await syncTodos();
+                    } catch (err) {
+                      alert((err as Error).message);
+                    }
+                  }}
+                  initialTitle={todo.title}
+                  submitLabel="更新"
+                />
+                <button onClick={() => setEditingId(null)}>キャンセル</button>
+              </>
+            ) : (
+              // 編集ボタンが押されていないときは、通常どおり表示する
+              <>
+                <strong>{todo.title}</strong>
+                （作成日時: {new Date(todo.createdAt).toLocaleString('ja-JP')}）
+                {todo.completed ? '✅' : ''}
+                <button onClick={() => setEditingId(todo.id)}>編集</button>
+              </>
+            )}
           </li>
         ))}
       </ul>
