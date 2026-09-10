@@ -25,7 +25,7 @@ const app = express();
 // CORSの設定を行う
 app.use(cors({
   origin: 'http://localhost:5173',  // 許可するオリジン
-  methods: ['GET', 'POST', 'PUT']          // 許可するHTTPメソッド
+  methods: ['GET', 'POST', 'PUT', 'DELETE']          // 許可するHTTPメソッド
 }));
 
 // JSON形式のリクエストボディを解析するミドルウェアを追加する
@@ -96,6 +96,23 @@ app.put('/api/todos/:id', async (req: Request, res: Response) => {
     }
 
     res.status(200).json({ message: 'ToDoを更新しました。' });
+  } catch (err) {
+    handleServerError(res, err);
+  }
+});
+// ToDoを削除するルート
+app.delete('/api/todos/:id', async (req: Request, res: Response) => {
+  try {
+    const sql = 'DELETE FROM todos WHERE id = ?';
+    const params = [req.params.id];
+    const result = await exec(sql, params);
+
+    if (result.affectedRows === 0) {
+      res.status(404).json({ error: '指定されたToDoが見つかりません。' });
+      return;
+    }
+
+    res.status(200).json({ message: 'ToDoを削除しました。' });
   } catch (err) {
     handleServerError(res, err);
   }

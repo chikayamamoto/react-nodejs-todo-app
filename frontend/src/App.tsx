@@ -60,7 +60,14 @@ function App() {
 
     if (!res.ok) throw new Error('ToDoの更新に失敗しました。');
   };
+  // APIにリクエストを送信し、ToDoを削除する関数
+  async function deleteTodo(id: number) {
+    const res = await fetch(`${apiUrl}/todos/${id}`, {
+      method: 'DELETE',
+    });
 
+    if (!res.ok) throw new Error('ToDoの削除に失敗しました。');
+  };
   return (
     <>
       <h2>ToDo一覧</h2>
@@ -113,7 +120,26 @@ function App() {
                 >
                   {todo.completed ? '✅' : '☐'}
                 </button>
-                <button onClick={() => setEditingId(todo.id)}>編集</button>
+                <button
+                  onClick={() => setEditingId(todo.id)}
+                  style={{ marginRight: '0.5em' }}
+                >
+                  編集
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm('本当に削除しますか？')) return;
+
+                    try {
+                      await deleteTodo(todo.id);
+                      await syncTodos();
+                    } catch (err) {
+                      alert((err as Error).message);
+                    }
+                  }}
+                >
+                  削除
+                </button>
               </>
             )}
           </li>
