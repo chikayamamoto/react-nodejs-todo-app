@@ -100,7 +100,19 @@ function App() {
               <>
                 <strong>{todo.title}</strong>
                 （作成日時: {new Date(todo.createdAt).toLocaleString('ja-JP')}）
-                {todo.completed ? '✅' : ''}
+                <button
+                  onClick={async () => {
+                    try {
+                      await updateTodo(todo.id, todo.title, !todo.completed);
+                      await syncTodos();
+                    } catch (err) {
+                      alert((err as Error).message);
+                    }
+                  }}
+                  style={{ marginRight: '0.5em' }}
+                >
+                  {todo.completed ? '✅' : '☐'}
+                </button>
                 <button onClick={() => setEditingId(todo.id)}>編集</button>
               </>
             )}
