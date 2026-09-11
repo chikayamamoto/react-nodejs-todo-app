@@ -12,7 +12,7 @@ interface Todo {
   completed: boolean;
   createdAt: Date;
 }
-const apiUrl = import.meta.env.VITE_API_URL;
+
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -57,16 +57,7 @@ function App() {
     initApp();
   }, []);
 
-  // APIにリクエストを送信し、ToDoを追加する関数
-  async function addTodo(title: string) {
-    const res = await fetch(`${apiUrl}/todos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title }),
-    });
 
-    if (!res.ok) throw new Error('ToDoの追加に失敗しました。');
-  };
 
   return (
     <>
