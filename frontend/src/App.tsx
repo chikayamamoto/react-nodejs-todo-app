@@ -12,6 +12,7 @@ interface Todo {
   completed: boolean;
   createdAt: Date;
 }
+const apiUrl = import.meta.env.VITE_API_URL;
 function App() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -22,6 +23,17 @@ function App() {
   async function syncTodos() {
     const todos = await fetchTodos();
     setTodos(todos);
+  }
+  // 認証トークンの有効限切れエラーを処理する関数
+  function handleExpired(err: unknown) {
+    if ((err as Error).message === 'EXPIRED') {
+      setIsLoggedIn(false);
+      setTodos([]);
+      setEditingId(null);
+      alert('セッションの有効期限が切れました。再度ログインしてください。');
+      return true;
+    }
+    return false;
   }
 
   // コンポーネントがマウントされたときの初期化処理
@@ -84,6 +96,7 @@ function App() {
                   await addTodo(title);
                   await syncTodos();
                 } catch (err) {
+                  if (handleExpired(err)) return;
                   alert((err as Error).message);
                 }
               }}
@@ -101,6 +114,7 @@ function App() {
                             setEditingId(null);
                             await syncTodos();
                           } catch (err) {
+                            if (handleExpired(err)) return;
                             alert((err as Error).message);
                           }
                         }}
@@ -120,6 +134,7 @@ function App() {
                             await updateTodo(todo.id, todo.title, !todo.completed);
                             await syncTodos();
                           } catch (err) {
+                            if (handleExpired(err)) return;
                             alert((err as Error).message);
                           }
                         }}
@@ -141,6 +156,7 @@ function App() {
                             await deleteTodo(todo.id);
                             await syncTodos();
                           } catch (err) {
+                            if (handleExpired(err)) return;
                             alert((err as Error).message);
                           }
                         }}
