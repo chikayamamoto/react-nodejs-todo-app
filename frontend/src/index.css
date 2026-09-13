@@ -250,7 +250,9 @@ form button:hover {
   color: var(--c-text-muted);
   margin-top: 0.5rem;
 }
-
+.todo-updated-at{
+  padding-left: 0.5rem;
+}
 .todo-edit-form-wrapper {
   display: flex;
   width: 100%;
